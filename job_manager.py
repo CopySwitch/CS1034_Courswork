@@ -78,7 +78,20 @@ class JobManager:
         return [j for j in self._jobs if j.get_name() == name and j.get_date() == date]
 
     def get_total_cost_per_name(self, names):
-        raise NotImplementedError
+        if not isinstance(names, list):
+            raise TypeError("names must be a list of strings")
+        for n in names:
+            if not isinstance(n, str):
+                raise TypeError("names must contain only strings")
+
+        totals = {}
+        for n in names:
+            total_cost = 0.0
+            for j in self._jobs:
+                if j.get_name() == n:
+                    total_cost += j.get_rate() * j.get_hours()
+            totals[n] = float(total_cost)
+        return totals
 
     def get_category_count_per_name(self):
         raise NotImplementedError
