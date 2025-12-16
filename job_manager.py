@@ -11,7 +11,10 @@ class JobManager:
             for j in jobs:
                 if not isinstance(j, Job):
                     raise TypeError("All items in jobs must be Job objects")
-            self._jobs = jobs
+            # build safely using add_job to enforce 8-hour rule
+            self._jobs = []
+            for j in jobs:
+                self.add_job(j)
 
     def get_jobs(self):
         return self._jobs
@@ -23,7 +26,13 @@ class JobManager:
         return f"JobManager(jobs={self._jobs!r})"
 
     def add_job(self, job):
-        raise NotImplementedError
+        if not isinstance(job, Job):
+            raise TypeError("job must be a Job object")
+
+        if not self._is_worker_available(job.get_name(), job.get_date(), job.get_hours()):
+            raise ValueError("Worker is not available (would exceed 8 hours on that date)")
+
+        self._jobs.append(job)
 
     def remove_job(self, job):
         raise NotImplementedError
@@ -51,3 +60,14 @@ class JobManager:
 
     def save_to_file(self, file_name):
         raise NotImplementedError
+
+    # ---- helper methods (allowed) ----
+    def _total_hours_for_name_date(self, name, date):
+        total = 0
+        for j in self._jobs:
+            if j.get_name() == name and j.get_date() == date:
+                total += j.get_hours()
+        return total
+
+    def _is_worker_available(self, name, date, hours_to_add):
+        return self._total_hours_for_name_date(name, date) + hours_to_add <= 8
