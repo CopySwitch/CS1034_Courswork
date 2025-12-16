@@ -11,7 +11,6 @@ class JobManager:
             for j in jobs:
                 if not isinstance(j, Job):
                     raise TypeError("All items in jobs must be Job objects")
-            # build safely using add_job to enforce 8-hour rule
             self._jobs = []
             for j in jobs:
                 self.add_job(j)
@@ -35,7 +34,12 @@ class JobManager:
         self._jobs.append(job)
 
     def remove_job(self, job):
-        raise NotImplementedError
+        if not isinstance(job, Job):
+            raise TypeError("job must be a Job object")
+        try:
+            self._jobs.remove(job)
+        except ValueError as e:
+            raise ValueError("Job not found; cannot remove") from e
 
     def edit_job(self, old_job, new_job):
         raise NotImplementedError
@@ -61,7 +65,7 @@ class JobManager:
     def save_to_file(self, file_name):
         raise NotImplementedError
 
-    # ---- helper methods (allowed) ----
+    # ---- helper methods ----
     def _total_hours_for_name_date(self, name, date):
         total = 0
         for j in self._jobs:
