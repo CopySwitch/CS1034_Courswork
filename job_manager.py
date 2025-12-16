@@ -62,13 +62,20 @@ class JobManager:
         self._jobs[index] = new_job
 
     def search_by_category(self, category):
-        raise NotImplementedError
+        if not isinstance(category, str):
+            raise TypeError("category must be a string")
+        return [j for j in self._jobs if j.get_category() == category]
 
     def search_by_rate(self, rate):
-        raise NotImplementedError
+        if not isinstance(rate, (int, float)):
+            raise TypeError("rate must be a number")
+        r = float(rate)
+        return [j for j in self._jobs if j.get_rate() == r]
 
     def search_by_name_and_date(self, name, date):
-        raise NotImplementedError
+        if not isinstance(name, str) or not isinstance(date, str):
+            raise TypeError("name and date must be strings")
+        return [j for j in self._jobs if j.get_name() == name and j.get_date() == date]
 
     def get_total_cost_per_name(self, names):
         raise NotImplementedError
