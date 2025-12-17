@@ -1,3 +1,6 @@
+import csv
+from pathlib import Path
+
 from Job import Job
 
 
@@ -103,10 +106,48 @@ class JobManager:
         return result
 
     def load_from_file(self, file_name):
-        raise NotImplementedError
+        """
+        Expects a CSV header:
+        name,category,rate,date,hours
+        """
+        path = Path(file_name)
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {file_name}")
+
+        with path.open("r", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            required = {"name", "category", "rate", "date", "hours"}
+            if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
+                raise ValueError("CSV must include header: name,category,rate,date,hours")
+
+            for row in reader:
+                job = Job(
+                    row["name"],
+                    row["category"],
+                    float(row["rate"]),
+                    row["date"],
+                    int(row["hours"])
+                )
+                # add_job enforces the 8-hours-per-day rule
+                self.add_job(job)
 
     def save_to_file(self, file_name):
-        raise NotImplementedError
+        """
+        Writes a CSV with header:
+        name,category,rate,date,hours
+        """
+        path = Path(file_name)
+        with path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["name", "category", "rate", "date", "hours"])
+            writer.writeheader()
+            for j in self._jobs:
+                writer.writerow({
+                    "name": j.get_name(),
+                    "category": j.get_category(),
+                    "rate": j.get_rate(),
+                    "date": j.get_date(),
+                    "hours": j.get_hours()
+                })
 
     # ---- helper methods ----
     def _total_hours_for_name_date(self, name, date, exclude_job=None):
