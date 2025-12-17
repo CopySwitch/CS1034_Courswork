@@ -94,7 +94,13 @@ class JobManager:
         return totals
 
     def get_category_count_per_name(self):
-        raise NotImplementedError
+        result = {}
+        for j in self._jobs:
+            name = j.get_name()
+            category = j.get_category()
+            result.setdefault(name, {})
+            result[name][category] = result[name].get(category, 0) + 1
+        return result
 
     def load_from_file(self, file_name):
         raise NotImplementedError
